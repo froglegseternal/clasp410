@@ -11,7 +11,7 @@ from matplotlib.colors import ListedColormap
 
 # Now, we define our constants.
 
-nx, ny = 3, 3 # Number of cells in X and Y direction.
+nx, ny = 3, 5 # Number of cells in X and Y direction.
 prob_spread = 1.0 # Chance to spread to adjacent cells.
 prob_bare = 0.0 # Chance of cell to start as a bare patch.
 prob_start = 0.0 # Chance of cell to start on fire.
