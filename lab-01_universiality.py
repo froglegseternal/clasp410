@@ -7,8 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 # Import ListedColormap as an object to create a specialized color map:
 from matplotlib.colors import ListedColormap
-# Import time for animating our graph.
-import time
+
 
 # Now, we define our constants.
 
@@ -80,15 +79,14 @@ def cell_is_edge(i, j):
 
 
 
-history_matrix = np.zeros([iterations+1, ny, nx], dtype =int) # 3-D array storing the historical values of our forest array.
-
+history_matrix = np.zeros([iterations+1, nx, ny], dtype =int) # 3-D array storing the historical values of our forest array.
 
 # Create an initial grid, set all values to "2". dtype sets the value
 # type in our array to integers only.
-forest = np.zeros([ny, nx], dtype =int) + 2
+forest = np.zeros([nx, ny], dtype =int) + 2
 
 # Set the center cell to "burning":
-forest[1, 1] = 3
+forest[int(nx/2), int(ny/2)] = 3
 
 # Create an array of randomly generated number of range [0, 1):
 isbare = np.random.rand(nx, ny)
@@ -116,7 +114,6 @@ def do_iterate(cur_iter, iter_num):
     if(cur_iter >= iter_num):
         history_matrix[cur_iter] = forest
         return -1
-    print(cur_iter)
     # First, make a copy of the forest. This makes it so that we can check the conditions of a cell we've already iterated over.
     history_matrix[cur_iter] = forest
     cur_iter = cur_iter + 1 # Locally defined iteration count.
@@ -143,7 +140,6 @@ def do_iterate(cur_iter, iter_num):
             #If the cell is barren - and there should be no burning cells currently due to the previous statement - then skip to the next loop.
             if isbare[i, j]:
                 continue
-    print(history_matrix)
     do_iterate(cur_iter, iter_num) # Recursion call
             
 
@@ -158,15 +154,24 @@ forest_cmap = ListedColormap(['tan', 'darkgreen', 'crimson'])
 # Create figure and set of axes:
 fig, ax = plt.subplots(1,1)
 
-# Because of the way that numpy arrays are indexed, we need to explicitly set the axes.
-plt.xlim(0,nx)
-plt.ylim(0,ny)
+# Set graph title
+ax.set_title("Forest Having Burnt for " + str(iterations) + " Iterations.")
 
-print(history_matrix)
-# Given the "history_matrix" object, a 3D array containing 2D arrays that contains numbers 1, 2, or 3,
+# Set axes titles.
+ax.set_xlabel("X Direction (m)")
+ax.set_ylabel("Y Direction (m)")
+
+# Because of the way that numpy arrays are indexed, we need to explicitly set the axes.
+plt.xlim(0,ny)
+plt.ylim(0,nx)
+
+# Given the "forest" object, a 2D array that contains numbers 1, 2, or 3,
 # Plot this using the "pcolor" method. Need to use our color map as well as set
 # both *vmin* and *vmax*.
-for foresti in history_matrix: 
-    ax.pcolor(forest, cmap=forest_cmap, vmin=1, vmax=3)
-    ax.imshow(forest)
-    plt.show()
+ax.pcolor(forest, cmap=forest_cmap, vmin=1, vmax=3)
+ax.imshow(forest)
+
+#norm = colors.Normalize(vmin=1, vmax=3)
+#fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=forest_cmap), cax=ax[0], orientation='horizontal',shrink=9)
+
+plt.show()
