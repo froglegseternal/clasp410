@@ -11,11 +11,11 @@ from matplotlib.colors import ListedColormap
 
 # Now, we define our constants.
 
-nx, ny = 3, 5 # Number of cells in X and Y direction.
-prob_spread = 1.0 # Chance to spread to adjacent cells.
+nx, ny = 100, 100 # Number of cells in X and Y direction.
+prob_spread = 0.9 # Chance to spread to adjacent cells.
 prob_bare = 0.0 # Chance of cell to start as a bare patch.
 prob_start = 0.0 # Chance of cell to start on fire.
-iterations = 5 # Number of times to iterate time.
+iterations = 150 # Number of times to iterate time.
  
 
 def is_burning(i, j, forest_array):
@@ -209,6 +209,26 @@ def plot_statistics(stat_matrix):
     stat_matrix: numpy array
         A 2-dimensional array that is the output of the do_process function and represents count over time.
     '''
+    # Create figure and set of axes:
+    fig, ax = plt.subplots(1,1)
+
+    # Set graph title
+    ax.set_title("Forest Having Burnt for " + str(iterations) + " Iterations.")
+
+    t = np.arange(0, iterations, 1) # Generate our time array - needed with how numpy works.
+    
+
+    bare = ax.plot(t, stat_matrix[0], label='Barren Cells')
+    forested = ax.plot(t, stat_matrix[1], label='Forested Cells')
+    on_fire = ax.plot(t, stat_matrix[2], label='Burning Cells')
+
+    # Set axes titles.
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Number of Cells")
+
+
+    plt.show()
 
 do_iterate(0, iterations) # Run the model
 statistics = do_process(3, history_matrix) # Do the statistics
+plot_statistics(statistics)
