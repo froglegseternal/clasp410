@@ -11,11 +11,12 @@ from matplotlib.colors import ListedColormap
 
 # Now, we define our constants.
 
-nx, ny = 100, 100 # Number of cells in X and Y direction.
-prob_spread = 0.9 # Chance to spread to adjacent cells.
+nx, ny = 5, 10 # Number of cells in X and Y direction.
+prob_spread = 1 # Chance to spread to adjacent cells.
 prob_bare = 0.0 # Chance of cell to start as a bare patch.
+prob_fatal = 0.0 # Chance of a person to become deceased from the disease.
 prob_start = 0.0 # Chance of cell to start on fire.
-iterations = 150 # Number of times to iterate time.
+iterations = 20 # Number of times to iterate time.
  
 
 def is_burning(i, j, forest_array):
@@ -114,7 +115,7 @@ def do_iterate(cur_iter, iter_num):
     if(cur_iter >= iter_num):
         history_matrix[cur_iter] = forest
         return -1
-    # First, make a copy of the forest. This makes it so that we can check the conditions of a cell we've already iterated over.
+    # Then, make a copy of the forest. This makes it so that we can check the conditions of a cell we've already iterated over.
     history_matrix[cur_iter] = forest
     cur_iter = cur_iter + 1 # Locally defined iteration count.
 
@@ -125,8 +126,11 @@ def do_iterate(cur_iter, iter_num):
         for j in range(ny):
             # If the cell is burning, it will stop burning and become barren.
             if is_burning(i, j, history_matrix[cur_iter-1]):
-                forest[i, j] = 1
-                isbare[i, j] = True
+                if np.random.rand() < prob_fatal:
+                    forest[i, j] = 0
+                else:
+                    forest[i, j] = 1
+                    isbare[i, j] = True
                 edge_status = cell_is_edge(i, j) # Now that we know the cell is burning, figure out if our current cell is an edge cell, and if so, in what way.
                 if 'left' not in edge_status and forest[i,j-1] != 1 and np.random.rand() < prob_spread:
                     forest[i,j-1] = 3
@@ -138,9 +142,8 @@ def do_iterate(cur_iter, iter_num):
                     forest[i-1,j] = 3
                 
 
-            #If the cell is barren - and there should be no burning cells currently due to the previous statement - then skip to the next loop.
-            if isbare[i, j]:
-                continue
+            #If this was the last iteration, append this iteration to the history matrix.
+            history_matrix[-1] = forest
     do_iterate(cur_iter, iter_num) # Recursion call
             
 def do_process(num_states, matrix):
@@ -166,6 +169,7 @@ def do_process(num_states, matrix):
         for i in range(nx): # Iterate over each row in the matrix we're counting.
             for j in range(ny): # Iterate over each column in the matrix we're counting.
                 state_arrays[matrix[x][i][j] - 1][x] = state_arrays[matrix[x][i][j] - 1][x] + 1 # Increment the count for the state this cell is in at this specific moment in time.
+   
     return state_arrays
 
 def plot_last_moment():
@@ -200,7 +204,31 @@ def plot_last_moment():
 
     plt.show()
 
-def plot_statistics(stat_matrix):
+def reset_forest():
+    '''
+    Resets the forest model after we've run it once. Useful for iterating over and over to generate a model of multiple fires at once.
+    '''
+    history_matrix = np.zeros([iterations+1, nx, ny], dtype =int) # 3-D array storing the historical values of our forest array.
+
+    # Create an initial grid, set all values to "2". dtype sets the value
+    # type in our array to integers only.
+    forest = np.zeros([nx, ny], dtype =int) + 2
+
+    # Set a random cell to "burning":
+    forest[int(np.random.rand() * nx), int(np.random.rand() * ny)] = 3
+
+    # Create an array of randomly generated number of range [0, 1):
+    isbare = np.random.rand(nx, ny)
+
+    # Turn it into an array of True/False values:
+
+    isbare = isbare < prob_bare
+    
+    # We can use this array of booleans to reference any existing array
+    # and change only the values corresponding to True:
+    forest[isbare] = 1    
+
+def plot_statistics_forest(stat_matrix):
     '''
     The function responsible for plotting our statistics once we have a functional model. Takes in the matrix of calculated statistics.
 
@@ -229,6 +257,35 @@ def plot_statistics(stat_matrix):
 
     plt.show()
 
-do_iterate(0, iterations) # Run the model
-statistics = do_process(3, history_matrix) # Do the statistics
-plot_statistics(statistics)
+def count_til_none(matrix, index):
+    '''
+    Takes in a matrix of cells over time (the output of do_process) and the index of a certain state row, and returns the first index where that row is zero.
+    Return -1 if there are no zero values found.
+
+    Parameters
+    ==========
+    matrix: numpy array
+        The matrix to reference
+    index: int
+        The index of the row in matrix to reference.
+    '''
+    for x in range(len(matrix[index])):
+        if matrix[index][x] == 0:
+            return x
+    return -1
+
+def vary_spread():
+    
+    for i in range(100):
+
+
+
+do_iterate(0, iterations) # Run the forest model once.
+statistics = do_process(3, history_matrix) # Do the statistics for the forest model.
+
+final_time = count_til_none(statistics, len(statistics) - 1)
+if final_time == -1: #If we did not stop burning, the 'forest left after we stopped burning' value no longer makes sense.
+    forested_left = -1
+else:
+    forested_left = statistics[len(statistics) - 2][final_time]
+
