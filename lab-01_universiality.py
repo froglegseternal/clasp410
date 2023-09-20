@@ -11,12 +11,11 @@ from matplotlib.colors import ListedColormap
 
 # Now, we define our constants.
 
-nx, ny = 5, 10 # Number of cells in X and Y direction.
-prob_spread = 1 # Chance to spread to adjacent cells.
+nx, ny = 20, 20 # Number of cells in X and Y direction.
 prob_bare = 0.0 # Chance of cell to start as a bare patch.
 prob_fatal = 0.0 # Chance of a person to become deceased from the disease.
 prob_start = 0.0 # Chance of cell to start on fire.
-iterations = 20 # Number of times to iterate time.
+iterations = 50 # Number of times to iterate time.
  
 
 def is_burning(i, j, forest_array):
@@ -100,7 +99,7 @@ isbare = isbare < prob_bare
 # and change only the values corresponding to True:
 forest[isbare] = 1
 
-def do_iterate(cur_iter, iter_num):
+def do_iterate(cur_iter, iter_num, forest, history_matrix, prob_spread = 1):
     '''
     This is the main function, responsible for iterating over time. It is recursive, calling itself as many times as specified by the iter_num parameter.
 
@@ -110,6 +109,12 @@ def do_iterate(cur_iter, iter_num):
         The current iteration we are on.
     iter_num: int
         The number of iterations to perform.
+    forest: numpy 2D matrix
+        Matrix of current state of the forest on this iteration
+    history_matrix: numpy 3D matrix
+        Matrix of all of the past states of the forest
+    prob_spread: double
+        The probability a fire/disease will spread.
     '''
     # First, check if we're currently on a bad iteration. If so, we quit.
     if(cur_iter >= iter_num):
@@ -144,7 +149,7 @@ def do_iterate(cur_iter, iter_num):
 
             #If this was the last iteration, append this iteration to the history matrix.
             history_matrix[-1] = forest
-    do_iterate(cur_iter, iter_num) # Recursion call
+    do_iterate(cur_iter, iter_num, forest, history_matrix, prob_spread=prob_spread) # Recursion call
             
 def do_process(num_states, matrix):
     '''
@@ -204,30 +209,7 @@ def plot_last_moment():
 
     plt.show()
 
-def reset_forest():
-    '''
-    Resets the forest model after we've run it once. Useful for iterating over and over to generate a model of multiple fires at once.
-    '''
-    history_matrix = np.zeros([iterations+1, nx, ny], dtype =int) # 3-D array storing the historical values of our forest array.
-
-    # Create an initial grid, set all values to "2". dtype sets the value
-    # type in our array to integers only.
-    forest = np.zeros([nx, ny], dtype =int) + 2
-
-    # Set a random cell to "burning":
-    forest[int(np.random.rand() * nx), int(np.random.rand() * ny)] = 3
-
-    # Create an array of randomly generated number of range [0, 1):
-    isbare = np.random.rand(nx, ny)
-
-    # Turn it into an array of True/False values:
-
-    isbare = isbare < prob_bare
     
-    # We can use this array of booleans to reference any existing array
-    # and change only the values corresponding to True:
-    forest[isbare] = 1    
-
 def plot_statistics_forest(stat_matrix):
     '''
     The function responsible for plotting our statistics once we have a functional model. Takes in the matrix of calculated statistics.
@@ -275,17 +257,109 @@ def count_til_none(matrix, index):
     return -1
 
 def vary_spread():
+    '''
+    Function responsible for the testing case of varying the possibility of spread each time and checking the result.
+    '''
+
+    forleft_mat = [] # Array of the amount of forest left after each runtime.
+    finalt_mat = [] # Array of the final time the forest is burning.
+    k = 0.3 # Step size of the varying percentages.
+    for i in np.arange(0, 100, k):
+        prob_spread = i/100
+        history_matrix = np.zeros([iterations+1, nx, ny], dtype =int) # 3-D array storing the historical values of our forest array.
+
+        # Create an initial grid, set all values to "2". dtype sets the value
+        # type in our array to integers only.
+        forest = np.zeros([nx, ny], dtype =int) + 2
+
+        # Create an array of randomly generated number of range [0, 1):
+        isbare = np.random.rand(nx, ny)
+
+        # Turn it into an array of True/False values:
+
+        isbare = isbare < prob_bare
     
-    for i in range(100):
+        # We can use this array of booleans to reference any existing array
+        # and change only the values corresponding to True:
+        forest[isbare] = 1    
 
+        # Set a random cell to "burning":
+        forest[int(np.random.rand() * nx), int(np.random.rand() * ny)] = 3
 
+        do_iterate(0, iterations, forest, history_matrix, prob_spread=prob_spread) # Run the forest model once.
+        statistics = do_process(3, history_matrix) # Do the statistics for the forest model.
 
-do_iterate(0, iterations) # Run the forest model once.
-statistics = do_process(3, history_matrix) # Do the statistics for the forest model.
+        final_time = count_til_none(statistics, len(statistics) - 1)
+        if final_time == -1: #If we did not stop burning, the 'forest left after we stopped burning' value no longer makes sense.
+            forested_left = -1
+        else: 
+            forested_left = statistics[len(statistics) - 2][final_time]
 
-final_time = count_til_none(statistics, len(statistics) - 1)
-if final_time == -1: #If we did not stop burning, the 'forest left after we stopped burning' value no longer makes sense.
-    forested_left = -1
-else:
-    forested_left = statistics[len(statistics) - 2][final_time]
+        forleft_mat.append(forested_left)
+        finalt_mat.append(final_time)
+    # Finally, plot.
+    fig, axes = plt.subplots(2, 1)
+    axes[0].plot(np.arange(0, 100, k), forleft_mat)
+    axes[1].plot(np.arange(0, 100, k), finalt_mat)
+    fig.suptitle("Results of Varying Probability of A Fire Spreading on Forest-Fire Spread Over Time", size=10)
+    axes[0].set_xlabel("Chance of a Fire Spreading (%)")
+    axes[0].set_ylabel("Number of Cells left non-bare")
+    axes[1].set_xlabel("Chance of a Fire Spreading (%)")
+    axes[1].set_ylabel("Iteration on which the fire stops")
+    fig.tight_layout()
+    fig.show()
+    fig.savefig("VariedSpread.png")
 
+def vary_bare():
+    '''
+    Function responsible for the testing case of varying the possibility of spread each time and checking the result.
+    '''
+
+    forleft_mat = [] # Array of the amount of forest left after each runtime.
+    finalt_mat = [] # Array of the final time the forest is burning.
+    k = 0.3 # Step size of the varying percentages.
+    for i in np.arange(0, 100, k):
+        prob_bare = i / 100
+        history_matrix = np.zeros([iterations+1, nx, ny], dtype =int) # 3-D array storing the historical values of our forest array.
+
+        # Create an initial grid, set all values to "2". dtype sets the value
+        # type in our array to integers only.
+        forest = np.zeros([nx, ny], dtype =int) + 2
+
+        # Create an array of randomly generated number of range [0, 1):
+        isbare = np.random.rand(nx, ny)
+
+        # Turn it into an array of True/False values:
+
+        isbare = isbare < prob_bare
+    
+        # We can use this array of booleans to reference any existing array
+        # and change only the values corresponding to True:
+        forest[isbare] = 1    
+
+        # Set a random cell to "burning":
+        forest[int(np.random.rand() * nx), int(np.random.rand() * ny)] = 3
+
+        do_iterate(0, iterations, forest, history_matrix) # Run the forest model once.
+        statistics = do_process(3, history_matrix) # Do the statistics for the forest model.
+
+        final_time = count_til_none(statistics, len(statistics) - 1)
+        if final_time == -1: #If we did not stop burning, the 'forest left after we stopped burning' value no longer makes sense.
+            forested_left = -1
+        else: 
+            forested_left = statistics[len(statistics) - 2][final_time]
+
+        forleft_mat.append(forested_left)
+        finalt_mat.append(final_time)
+    # Finally, plot.
+    fig, axes = plt.subplots(2, 1)
+    axes[0].plot(np.arange(0, 100, k), forleft_mat)
+    axes[1].plot(np.arange(0, 100, k), finalt_mat)
+    fig.suptitle("Results of Varying Density of a Forest on Forest-Fire Spread Over Time", size=10)
+    axes[0].set_xlabel("Probability a Given Spot is Bare (%)")
+    axes[0].set_ylabel("Number of Cells left non-bare")
+    axes[1].set_xlabel("Probability a Given Spot is Bare (%)")
+    axes[1].set_ylabel("Iteration on Which the Fire Stops")
+    fig.tight_layout()
+    fig.show()
+    fig.savefig("VariedBare.png")
