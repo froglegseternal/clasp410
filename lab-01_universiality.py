@@ -99,7 +99,7 @@ isbare = isbare < prob_bare
 # and change only the values corresponding to True:
 forest[isbare] = 1
 
-def do_iterate(cur_iter, iter_num, forest, history_matrix, prob_spread = 1):
+def do_iterate(cur_iter, iter_num, forest, history_matrix, prob_spread = 1.0, prob_fatal = 0.0):
     '''
     This is the main function, responsible for iterating over time. It is recursive, calling itself as many times as specified by the iter_num parameter.
 
@@ -115,6 +115,8 @@ def do_iterate(cur_iter, iter_num, forest, history_matrix, prob_spread = 1):
         Matrix of all of the past states of the forest
     prob_spread: double
         The probability a fire/disease will spread.
+    prob_fatal: double
+        The probability a given individual will not survive the disease.
     '''
     # First, check if we're currently on a bad iteration. If so, we quit.
     if(cur_iter >= iter_num):
@@ -137,26 +139,26 @@ def do_iterate(cur_iter, iter_num, forest, history_matrix, prob_spread = 1):
                     forest[i, j] = 1
                     isbare[i, j] = True
                 edge_status = cell_is_edge(i, j) # Now that we know the cell is burning, figure out if our current cell is an edge cell, and if so, in what way.
-                if 'left' not in edge_status and forest[i,j-1] != 1 and np.random.rand() < prob_spread:
+                if 'left' not in edge_status and forest[i,j-1] == 2 and np.random.rand() < prob_spread:
                     forest[i,j-1] = 3
-                if 'right' not in edge_status and forest[i,j+1] != 1 and np.random.rand() < prob_spread:
+                if 'right' not in edge_status and forest[i,j+1] == 2 and np.random.rand() < prob_spread:
                     forest[i,j+1] = 3
-                if 'bottom' not in edge_status and forest[i+1, j] != 1 and np.random.rand() < prob_spread:
+                if 'bottom' not in edge_status and forest[i+1, j] == 2 and np.random.rand() < prob_spread:
                     forest[i+1,j] = 3
-                if 'top' not in edge_status and forest[i-1, j] != 1 and np.random.rand() < prob_spread:
+                if 'top' not in edge_status and forest[i-1, j] == 2 and np.random.rand() < prob_spread:
                     forest[i-1,j] = 3
                 
 
             #If this was the last iteration, append this iteration to the history matrix.
             history_matrix[-1] = forest
-    do_iterate(cur_iter, iter_num, forest, history_matrix, prob_spread=prob_spread) # Recursion call
+    do_iterate(cur_iter, iter_num, forest, history_matrix, prob_spread=prob_spread, prob_fatal = prob_fatal) # Recursion call
             
 def do_process(num_states, matrix):
     '''
     After we have run our model, this is the code that will actually process the model. It takes in the number of states in the given array, and the array to process.
     The way it works is by creating several arrays, each of which represent the change in a certain value over time. These values, in turn, are the different states
     the cells can have. It returns an array of these arrays. It assumes that the states are integers - given how the rest of the code is laid out, this should not
-    be an issue, but is not the ideal representation.
+    be an issue, but is not the ideal representation. Additionally, in the current state of the code, any states zero or less are appended onto the end.
 
     Parameters
     ==========
@@ -312,7 +314,7 @@ def vary_spread():
 
 def vary_bare():
     '''
-    Function responsible for the testing case of varying the possibility of spread each time and checking the result.
+    Function responsible for the testing case of varying the possibility of starting bare each time and checking the result.
     '''
 
     forleft_mat = [] # Array of the amount of forest left after each runtime.
@@ -363,3 +365,117 @@ def vary_bare():
     fig.tight_layout()
     fig.show()
     fig.savefig("VariedBare.png")
+
+def vary_fatal():
+    '''
+    Function responsible for the testing case of varying the fatality rate of the disease.
+    '''
+    left_mat = [] # Array of the number of people left unaffected after the disease has stopped its course.
+    surviv_mat = [] # Array of the number of people who survived the disease after the disease stopped its course.
+    final_mat = [] # Array of the iteration on which no more people are sick.
+    k = 0.3 # Step size of the varying percentages
+    for i in np.arange(0, 100, k):
+        prob_fatal = i/100
+        history_matrix = np.zeros([iterations+1, nx, ny], dtype =int) # 3-D array storing the historical values of our array.
+
+        # Create an initial grid, set all values to "2". dtype sets the value
+        # type in our array to integers only.
+        people = np.zeros([nx, ny], dtype =int) + 2
+
+        # Create an array of randomly generated number of range [0, 1):
+        isimmune = np.random.rand(nx, ny)
+
+        # Turn it into an array of True/False values:
+
+        isimmune = isimmune < prob_bare
+    
+        # We can use this array of booleans to reference any existing array
+        # and change only the values corresponding to True:
+        people[isimmune] = 1 
+
+        # Set a random cell to "sick":
+        people[int(np.random.rand() * nx), int(np.random.rand() * ny)] = 3
+        do_iterate(0, iterations, people, history_matrix, prob_fatal=prob_fatal) # Run the model once.
+        statistics = do_process(4, history_matrix) # Do the statistics for the model.
+        print(statistics)
+        final_time = count_til_none(statistics, 2)
+        if final_time == -1: #If the disease did not stop, the 'people left after it stopped' value no longer makes sense.
+            people_left_unaffected = -1
+            people_survived = -1
+        else: 
+            people_left = statistics[1][final_time]
+            people_survived = statistics[0][final_time]
+        left_mat.append(people_left)
+        surviv_mat.append(people_survived)
+        final_mat.append(final_time)
+    # Finally, plot.
+    fig, axes = plt.subplots(2, 1)
+    axes[0].plot(np.arange(0, 100, k), left_mat, label="Unaffected")
+    axes[0].plot(np.arange(0, 100, k), surviv_mat, label="Survived")
+    axes[1].plot(np.arange(0, 100, k), final_mat)
+    axes[0].legend(loc="best")
+    fig.suptitle("Results of Varying Fatality Rate of a Disease on Spread Over Time", size=10)
+    axes[0].set_xlabel("Fatality Rate (%)")
+    axes[0].set_ylabel("Number of People")
+    axes[1].set_xlabel("Fatality Rate (%)")
+    axes[1].set_ylabel("Iteration on Which the Disease Stops")
+    fig.tight_layout()
+    fig.show()
+    fig.savefig("VariedFatal.png")
+def immunities():
+    '''
+    Function responsible for the testing case of starting people with immunities and checking the result.
+    '''
+
+    left_mat = [] # Array of the number of people left unaffected after the disease has stopped its course.
+    surviv_mat = [] # Array of the number of people who survived the disease after the disease stopped its course.
+    final_mat = [] # Array of the iteration on which no more people are sick.
+    k = 0.3 # Step size of the varying percentages
+    for i in np.arange(0, 100, k):
+        prob_bare = i / 100
+        history_matrix = np.zeros([iterations+1, nx, ny], dtype =int) # 3-D array storing the historical values of our array.
+
+        # Create an initial grid, set all values to "2". dtype sets the value
+        # type in our array to integers only.
+        people = np.zeros([nx, ny], dtype =int) + 2
+
+        # Create an array of randomly generated number of range [0, 1):
+        isimmune = np.random.rand(nx, ny)
+
+        # Turn it into an array of True/False values:
+
+        isimmune = isimmune < prob_bare
+    
+        # We can use this array of booleans to reference any existing array
+        # and change only the values corresponding to True:
+        people[isimmune] = 1 
+
+        # Set a random cell to "sick":
+        people[int(np.random.rand() * nx), int(np.random.rand() * ny)] = 3
+        do_iterate(0, iterations, people, history_matrix, prob_fatal=0.75) # Run the model once.
+        statistics = do_process(4, history_matrix) # Do the statistics for the model.
+        final_time = count_til_none(statistics, 2)
+        if final_time == -1: #If the disease did not stop, the 'people left after it stopped' value no longer makes sense.
+            people_left_unaffected = -1
+            people_survived = -1
+        else: 
+            people_left = statistics[1][final_time]
+            people_survived = statistics[0][final_time]
+        left_mat.append(people_left)
+        surviv_mat.append(people_survived)
+        final_mat.append(final_time)
+    # Finally, plot.
+    fig, axes = plt.subplots(2, 1)
+    axes[0].plot(np.arange(0, 100, k), surviv_mat, label="Survived")
+    axes[1].plot(np.arange(0, 100, k), final_mat)
+    axes[0].legend(loc="best")
+    fig.suptitle("Results of Introducing Vaccines Early on Disease Spread Over Time", size=10)
+    axes[0].set_xlabel("Vaccinated Percentage (%)")
+    axes[0].set_ylabel("Number of People")
+    axes[1].set_xlabel("Vaccinated Percentage (%)")
+    axes[1].set_ylabel("Iteration on Which the Disease Stops")
+    fig.tight_layout()
+    fig.show()
+    fig.savefig("Immunities.png")
+vary_fatal()
+immunities()
