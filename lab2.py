@@ -138,14 +138,30 @@ def problem_one():
 
     # Run our models for the competition model.
     time_euler, N1_euler, N2_euler = euler_solve(Ndt_comp, init_N1, init_N2, comp_step, max_T)
-    time_rk, N1_rk, N2_rk = euler_solve(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T)
+    time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T)
 
-    fig, axes = plt.subplots(1, 1, figsize=(10, 6))
-    axes.plot(time_euler, N1_euler)
-    axes.plot(time_euler, N2_euler)
-    axes.plot(time_rk, N1_rk)
-    axes.plot(time_rk, N2_rk)
-
+    # Plot our first graph.
+    fig, axes = plt.subplots(1, 2, figsize=(10, 6))
+    axes[0].plot(time_euler, N1_euler, ls='solid',color='C2',label='N1 Euler')
+    axes[0].plot(time_euler, N2_euler, ls='solid',color='C3', label='N2 Euler')
+    axes[0].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+    axes[0].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+    axes[0].set_title("Lotka-Volterra Competition Model")
+    axes[0].legend()
+    axes[0].set_xlabel('Time (years)')
+    axes[0].set_ylabel('Population/Carrying Cap.')
+    
+    # Run our models for the predator-prey model.
+    
+    # Plot our second graph.
+    axes[1].plot(time_euler, N1_euler, ls='solid',color='C2',label='N1 Euler')
+    axes[1].plot(time_euler, N2_euler, ls='solid',color='C3', label='N2 Euler')
+    axes[1].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+    axes[1].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+    axes[1].set_title("Lotka-Volterra Competition Model")
+    axes[1].legend()
+    axes[1].set_xlabel('Time (years)')
+    axes[1].set_ylabel('Population/Carrying Cap.')
     fig.show()
 
 problem_one()
