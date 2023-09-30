@@ -245,8 +245,6 @@ def problem_two():
     '''
      # Define our constants for this problem.
     max_T = 100
-    init_N1 = 0.3
-    init_N2 = 0.6
     comp_step = 1
 
     # Define our changing values.
@@ -256,11 +254,119 @@ def problem_two():
     d = 3
     init_N1 = 0.3
     init_N2 = 0.6
-    for init_N1 in np.linspace(0.1, 1, 9):
-        for init_N2 in np.linspace(0.1, 1, 9):
+    for init_N1 in np.linspace(0.1, 0.5, 3): # Vary initial N1
+        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step)
+        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
+        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes.set_title("Lotka-Volterra Competition Model")
+        axes.legend()
+        axes.set_xlabel('Time (years)')
+        axes.set_ylabel('Population/Carrying Cap.')
+    
+        fig.suptitle("Coefficients: a=1, b=2, c=1, d=3; initial N1: " + str(init_N1))
+#        fig.show()
+        fig.savefig(fname="question_two_varied_N1"+str(init_N1)+"comp_lab2.png")
+    init_N1 = 0.3 # Reset initial N1 back to original value.
+    for init_N2 in np.linspace(0.1,0.5,3): # Vary N2
+        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step)
+        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
+        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes.set_title("Lotka-Volterra Competition Model")
+        axes.legend()
+        axes.set_xlabel('Time (years)')
+        axes.set_ylabel('Population/Carrying Cap.')
+    
+        fig.suptitle("Coefficients: a=1, b=2, c=1, d=3; initial N2: " + str(init_N2))
+#        fig.show()
+        fig.savefig(fname="question_two_varied_N2"+str(init_N2)+"comp_lab2.png")
+    init_N2 = 0.6 # Reset initial N2 back to original value
+    for a in range(1,5): # Vary a
+        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step, a=a)
+        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
+        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes.set_title("Lotka-Volterra Competition Model")
+        axes.legend()
+        axes.set_xlabel('Time (years)')
+        axes.set_ylabel('Population/Carrying Cap.')
+    
+        fig.suptitle("Coefficients: a="+str(a)+", b=2, c=1, d=3")
+#        fig.show()
+        fig.savefig(fname="question_two_varied_a"+str(a)+"comp_lab2.png")
+    a = 1 # Reset a back to original value
+    for b in range(1,5): # Vary b
+        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step, b=b)
+        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
+        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes.set_title("Lotka-Volterra Competition Model")
+        axes.legend()
+        axes.set_xlabel('Time (years)')
+        axes.set_ylabel('Population/Carrying Cap.')
+    
+        fig.suptitle("Coefficients: a=1,b="+str(b)+",c=1, d=3")
+#        fig.show()
+        fig.savefig(fname="question_two_varied_b"+str(b)+"comp_lab2.png")
+    b = 2 # Reset b back to original value
+    for c in range(1,5): # Vary c
+        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step, c=c)
+        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
+        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes.set_title("Lotka-Volterra Competition Model")
+        axes.legend()
+        axes.set_xlabel('Time (years)')
+        axes.set_ylabel('Population/Carrying Cap.')
+    
+        fig.suptitle("Coefficients: a=1,b=2,c="+str(c)+", d=3")
+#        fig.show()
+        fig.savefig(fname="question_two_varied_c"+str(c)+"comp_lab2.png")
+    c = 1 # Reset c back to original value
+    for d in range(1,5): # Vary d
+        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step, d=d)
+        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
+        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes.set_title("Lotka-Volterra Competition Model")
+        axes.legend()
+        axes.set_xlabel('Time (years)')
+        axes.set_ylabel('Population/Carrying Cap.')
+    
+        fig.suptitle("Coefficients: a=1,b=2,c=1,d="+str(d))
+#        fig.show()
+        fig.savefig(fname="question_two_varied_d"+str(d)+"comp_lab2.png")
+    d = 3
+    b = 2
+    c = 1
+    a = 1
+    N1_init = 0.325
+    N2_init = 0.775
+    time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step, a=a, b=b,c=c,d=d)
+    fig, axes = plt.subplots(1, 1, figsize=(10, 6))
+    axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+    axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+    axes.set_title("Lotka-Volterra Competition Model")
+    axes.legend()
+    axes.set_xlabel('Time (years)')
+    axes.set_ylabel('Population/Carrying Cap.')
+    
+    fig.suptitle("Coefficients: a=1,b=2,c=1,d=3; initial N1 = 0.325, initial N2 = 0.775.")
+#        fig.show()
+    fig.savefig(fname="question_two_combined_best_comp_lab2.png")
+ #   for init_N1 in np.linspace(0.1, 1, 9):
+ #       for init_N2 in np.linspace(0.1, 1, 9):
+ #           time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step, a=a, b=b,c=c,d=d)
+ #           if(N1_rk[-1] > 0.2 and N2_rk[-1] > 0.2):
+ #               print("a: "+ str(a) + ",b:"+str(b)+",c:"+str(c)+",d:"+str(d)+",N1_init:"+str(init_N1)+",N2_init:"+str(init_N2))
+
+
+
 def problem_three():
     '''
     This function solves the third problem in the assignment.
     '''
 
-problem_one()
+#problem_one() # Run problem one
+#problem_two() # Run problem two
