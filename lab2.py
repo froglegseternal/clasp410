@@ -201,45 +201,57 @@ def problem_one():
     fig.show()
     fig.savefig(fname="question_one_init_lab2.png")
     
+    fig, axes = plt.subplots(2, 5, figsize=(20, 10))
+    k = 0
+    i = 0
     for step in np.linspace(0.1, 2, 10):
          # Run our models for the competition model.
         time_euler, N1_euler, N2_euler = euler_solve(Ndt_comp, N1_init=init_N1, N2_init=init_N2, dT=step, t_final=max_T)
         time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT=step)
 
         # Plot our first graphs.
-        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
-        axes.plot(time_euler, N1_euler, ls='solid',color='C2',label='N1 Euler')
-        axes.plot(time_euler, N2_euler, ls='solid',color='C3', label='N2 Euler')
-        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
-        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
-        axes.set_title("Lotka-Volterra Competition Model")
-        axes.legend()
-        axes.set_xlabel('Time (years)')
-        axes.set_ylabel('Population/Carrying Cap.')
+        
+        axes[k,i].plot(time_euler, N1_euler, ls='solid',color='C2',label='N1 Euler')
+        axes[k,i].plot(time_euler, N2_euler, ls='solid',color='C3', label='N2 Euler')
+        axes[k,i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes[k,i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes[k,i].set_title("Step: " + str(step))
+        axes[k,i].legend()
+        axes[k,i].set_xlabel('Time (years)')
+        axes[k,i].set_ylabel('Population/Carrying Cap.')
+        i += 1
+        if i >= 5:
+            i = 0
+            k += 1
+    fig.suptitle("Coefficients: a=1, b=2, c=1, d=3; Lotka-Volterra Competition Model")
+#    fig.show()
+    fig.savefig(fname="question_one_comp_lab2.png")
     
-        fig.suptitle("Coefficients: a=1, b=2, c=1, d=3; Step: " + str(step))
-#        fig.show()
-        fig.savefig(fname="question_one_"+str(step)+"comp_lab2.png")
-    
+    k = 0
+    i = 0
+    fig, axes = plt.subplots(2, 5, figsize=(20, 10))
     for step in np.linspace(0.01, 0.1, 10):
         # Run our models for the predator-prey model.
         time_euler, N1_euler, N2_euler = euler_solve(Ndt_predprey, N1_init=init_N1, N2_init=init_N2, dT=step, t_final=max_T)
         time_rk, N1_rk, N2_rk = solve_rk8(Ndt_predprey, N1_init=init_N1, N2_init=init_N2, dT=step,t_final=max_T)    
 
          # Plot our second graphs.
-        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
-        axes.plot(time_euler, N1_euler, ls='solid',color='C2',label='N1 (Prey) Euler')
-        axes.plot(time_euler, N2_euler, ls='solid',color='C3', label='N2 (Predator) Euler')
-        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 (Prey) RKB')
-        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 (Predator) RKB')
-        axes.set_title("Lotka-Volterra Predator-Prey Model")
-        axes.legend()
-        axes.set_xlabel('Time (years)')
-        axes.set_ylabel('Population/Carrying Cap.')
-    
-        fig.suptitle("Coefficients: a=1, b=2, c=1, d=3; Step: " + str(step))
+        axes[k,i].plot(time_euler, N1_euler, ls='solid',color='C2',label='N1 (Prey) Euler')
+        axes[k,i].plot(time_euler, N2_euler, ls='solid',color='C3', label='N2 (Predator) Euler')
+        axes[k,i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 (Prey) RKB')
+        axes[k,i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 (Predator) RKB')
+        axes[k,i].set_title("Step: "+str(step))
+        axes[k,i].legend()
+        axes[k,i].set_xlabel('Time (years)')
+        axes[k,i].set_ylabel('Population/Carrying Cap.')
+        axes[k,i].set_ylim(0,1)
+        i+=1
+        if i >= 5:
+            i = 0
+            k += 1
+    fig.suptitle("Coefficients: a=1, b=2, c=1, d=3; Lotka-Volterra Predator-Prey Model")
 #        fig.show()
-        fig.savefig(fname="question_one_"+str(step)+"predprey_lab2.png")
+    fig.savefig(fname="question_one_predprey_lab2.png")
 def problem_two():
     '''
     This function solves the second problem in the assignment. It does so by iterating a range of values for the following variables
@@ -258,89 +270,102 @@ def problem_two():
     d = 3
     init_N1 = 0.3
     init_N2 = 0.6
+    # Define our graph indices
+    i = 0
+    # Define our subplots
+    fig, axes = plt.subplots(1, 5, figsize=(20, 10))
     for init_N1 in np.linspace(0.1, 0.5, 5): # Vary initial N1
         time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step)
-        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
-        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
-        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
-        axes.set_title("Lotka-Volterra Competition Model")
-        axes.legend()
-        axes.set_xlabel('Time (years)')
-        axes.set_ylabel('Population/Carrying Cap.')
-    
-        fig.suptitle("Coefficients: a=1, b=2, c=1, d=3; initial N1: " + str(init_N1))
-#        fig.show()
-        fig.savefig(fname="question_two_varied_N1"+str(init_N1)+"comp_lab2.png")
+  
+        axes[i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes[i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes[i].set_title("initial N1: "+str(init_N1))
+        axes[i].legend()
+        axes[i].set_xlabel('Time (years)')
+        axes[i].set_ylabel('Population/Carrying Cap.')
+        i+=1 # Increment our graph index
+
+    fig.suptitle("Coefficients: a=1, b=2, c=1, d=3; Lotka-Volterra Competition Model")
+#    fig.show()
+    fig.savefig(fname="question_two_varied_N1_comp_lab2.png")
     init_N1 = 0.3 # Reset initial N1 back to original value.
+    fig, axes = plt.subplots(1, 5, figsize=(20, 10)) # Define our subplots
+    i = 0 # Reset our graph index
     for init_N2 in np.linspace(0.1,0.5,5): # Vary N2
         time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step)
-        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
-        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
-        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
-        axes.set_title("Lotka-Volterra Competition Model")
-        axes.legend()
-        axes.set_xlabel('Time (years)')
-        axes.set_ylabel('Population/Carrying Cap.')
-    
-        fig.suptitle("Coefficients: a=1, b=2, c=1, d=3; initial N2: " + str(init_N2))
-#        fig.show()
-        fig.savefig(fname="question_two_varied_N2"+str(init_N2)+"comp_lab2.png")
+        axes[i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes[i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes[i].set_title("Initial N2: "+str(init_N2))
+        axes[i].legend()
+        axes[i].set_xlabel('Time (years)')
+        axes[i].set_ylabel('Population/Carrying Cap.')
+        i += 1 # Increment our graph index
+    fig.suptitle("Coefficients: a=1, b=2, c=1, d=3; Lotka-Volterra Competition Model")
+#    fig.show()
+    fig.savefig(fname="question_two_varied_N2_comp_lab2.png")
+
     init_N2 = 0.6 # Reset initial N2 back to original value
-    for a in range(1,5): # Vary a
+    i = 0 # Reset our graph index
+    fig, axes = plt.subplots(1, 4, figsize=(20, 10))
+    for a in np.linspace(0.1,2,4): # Vary a
         time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step, a=a)
-        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
-        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
-        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
-        axes.set_title("Lotka-Volterra Competition Model")
-        axes.legend()
-        axes.set_xlabel('Time (years)')
-        axes.set_ylabel('Population/Carrying Cap.')
+        axes[i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes[i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes[i].set_title("a: "+str(a))
+        axes[i].legend()
+        axes[i].set_xlabel('Time (years)')
+        axes[i].set_ylabel('Population/Carrying Cap.')
+        i += 1 # Increment our graph index
     
-        fig.suptitle("Coefficients: a="+str(a)+", b=2, c=1, d=3")
-#        fig.show()
-        fig.savefig(fname="question_two_varied_a"+str(a)+"comp_lab2.png")
+    fig.suptitle("Coefficients: b=2, c=1, d=3; Lotka-Volterra Competition Model")
+#    fig.show()
+    fig.savefig(fname="question_two_varied_a_comp_lab2.png")
     a = 1 # Reset a back to original value
-    for b in range(1,5): # Vary b
+    i = 0 # Reset our graph index
+    fig, axes = plt.subplots(1, 4, figsize=(20, 10))
+    for b in np.linspace(0.1,2,4): # Vary b
         time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step, b=b)
-        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
-        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
-        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
-        axes.set_title("Lotka-Volterra Competition Model")
-        axes.legend()
-        axes.set_xlabel('Time (years)')
-        axes.set_ylabel('Population/Carrying Cap.')
-    
-        fig.suptitle("Coefficients: a=1,b="+str(b)+",c=1, d=3")
-#        fig.show()
-        fig.savefig(fname="question_two_varied_b"+str(b)+"comp_lab2.png")
+        axes[i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes[i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes[i].set_title("b: "+str(b))
+        axes[i].legend()
+        axes[i].set_xlabel('Time (years)')
+        axes[i].set_ylabel('Population/Carrying Cap.')
+        i += 1 # Increment our graph index
+    fig.suptitle("Coefficients: a=1,c=1,d=3; Lotka-Volterra Competition Model")
+#    fig.show()
+    fig.savefig(fname="question_two_varied_b_comp_lab2.png")
     b = 2 # Reset b back to original value
+    i = 0 # Reset our graphp index
+    fig, axes = plt.subplots(1, 4, figsize=(20, 10))
     for c in range(1,5): # Vary c
         time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step, c=c)
-        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
-        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
-        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
-        axes.set_title("Lotka-Volterra Competition Model")
-        axes.legend()
-        axes.set_xlabel('Time (years)')
-        axes.set_ylabel('Population/Carrying Cap.')
-    
-        fig.suptitle("Coefficients: a=1,b=2,c="+str(c)+", d=3")
-#        fig.show()
-        fig.savefig(fname="question_two_varied_c"+str(c)+"comp_lab2.png")
+        axes[i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes[i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes[i].set_title("c: "+ str(c))
+        axes[i].legend()
+        axes[i].set_xlabel('Time (years)')
+        axes[i].set_ylabel('Population/Carrying Cap.')
+        i += 1 # Increment our graph index
+    fig.suptitle("Coefficients: a=1,b=2,d=3; Lotka-Volterra Competition Model")
+#    fig.show()
+    fig.savefig(fname="question_two_varied_c_comp_lab2.png")
     c = 1 # Reset c back to original value
+    i = 0 # Reset our graph index
+    fig, axes = plt.subplots(1, 4, figsize=(20, 10))
     for d in range(1,5): # Vary d
         time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step, d=d)
-        fig, axes = plt.subplots(1, 1, figsize=(10, 6))
-        axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
-        axes.plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
-        axes.set_title("Lotka-Volterra Competition Model")
-        axes.legend()
-        axes.set_xlabel('Time (years)')
-        axes.set_ylabel('Population/Carrying Cap.')
+        axes[i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes[i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes[i].set_title("d: "+ str(d))
+        axes[i].legend()
+        axes[i].set_xlabel('Time (years)')
+        axes[i].set_ylabel('Population/Carrying Cap.')
+        i += 1 # Increment our graph index
     
-        fig.suptitle("Coefficients: a=1,b=2,c=1,d="+str(d))
-#        fig.show()
-        fig.savefig(fname="question_two_varied_d"+str(d)+"comp_lab2.png")
+    fig.suptitle("Coefficients: a=1,b=2,c=1; Lotka-Volterra Competition Model")
+#    fig.show()
+    fig.savefig(fname="question_two_varied_d_comp_lab2.png")
     d = 5
     b = 0.1
     c = 5
@@ -358,7 +383,7 @@ def problem_two():
     axes.set_ylabel('Population/Carrying Cap.')
     
     fig.suptitle("Coefficients: a=0.1,b=0.1,c=5,d=5; initial N1 = 0.5, initial N2 = 0.5.")
-    fig.show()
+#    fig.show()
     fig.savefig(fname="question_two_final_comp_lab2.png")
 '''    for a in np.linspace(0.1, 5, 9):
         for b in np.linspace(0.1, 5, 9):
