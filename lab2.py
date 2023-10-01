@@ -198,7 +198,7 @@ def problem_one():
     axes[1].set_ylabel('Population/Carrying Cap.')
 
     fig.suptitle("Coefficients: a=1, b=2, c=1, d=3")
-    fig.show()
+ #   fig.show()
     fig.savefig(fname="question_one_init_lab2.png")
     
     fig, axes = plt.subplots(2, 5, figsize=(20, 10))
@@ -413,125 +413,200 @@ def problem_three():
 
     # Run our model
     time_rk, N1_rk, N2_rk = solve_rk8(Ndt_predprey, N1_init=init_N1, N2_init=init_N2, t_final=max_T, a=a, b=b,c=c,d=d)
-    for init_N1 in np.linspace(0.1, 0.5, 3): # Vary initial N1
-        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T)
-        fig, axes = plt.subplots(1, 2, figsize=(10, 6))
-        # Time plot
-        axes[0].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
-        axes[0].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
-        axes[0].set_title("Plot over Time")
-        axes[0].legend()
-        axes[0].set_xlabel('Time (years)')
-        axes[0].set_ylabel('Population/Carrying Cap.')
+    fig0, axes0 = plt.subplots(1, 5, figsize=(20, 10)) # Time plot
+    fig1, axes1 = plt.subplots(1, 5, figsize=(20, 10)) # Phase plot
+
+    i = 0 # Initialize plot index
+
+    for init_N1 in np.linspace(0.1, 0.5, 5): # Vary initial N1
+        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_predprey, N1_init=init_N1, N2_init=init_N2, t_final=max_T, a=a, b=b, c=c, d=d)
         
+        # Time plot
+        axes0[i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes0[i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes0[i].set_title("Initial N1: " + str(init_N1))
+        axes0[i].legend()
+        axes0[i].set_xlabel('Time (years)')
+        axes0[i].set_ylabel('Population/Carrying Cap.')
+        axes0[i].set_ylim(0,1)
+
         # Phase plot
-        axes[1].plot(N1_rk, N2_rk)
-        axes[1].set_title("Phase Diagram")
-        axes[1].set_xlabel("N1 Population/Carrying Cap.")
-        axes[1].set_ylabel("N2 Population/Carrying Cap.")    
-        fig.suptitle("Lotka-Volterra Predator-Prey Model. Coefficients: a=1, b=2, c=1, d=3; initial N1: " + str(init_N1))
-#        fig.show()
-        fig.savefig(fname="question_three_varied_N1"+str(init_N1)+"predprey_lab2.png")
+        axes1[i].plot(N1_rk, N2_rk)
+        axes1[i].set_title("Initial N1: " + str(init_N1))
+        axes1[i].set_xlabel("N1 Population/Carrying Cap.")
+        axes1[i].set_ylabel("N2 Population/Carrying Cap.")    
+        axes1[i].set_ylim(0,1)
+        axes1[i].set_xlim(0,1)
+        i += 1 # Increment plot index
+    fig0.suptitle("Lotka-Volterra Predator-Prey Model Plot over Time. Coefficients: a=1, b=2, c=1, d=3")
+    fig1.suptitle("Lotka-Volterra Predator-Prey Model Phase Plot. Coefficients: a=1, b=2, c=1, d=3")
+ #   fig0.show()
+ #   fig1.show()
+    fig0.savefig(fname="question_three_varied_N1_time_predprey_lab2.png")
+    fig1.savefig(fname="question_three_varied_N1_phase_predprey_lab2.png")
+
     init_N1 = 0.3 # Reset initial N1 back to original value.
-    for init_N2 in np.linspace(0.1,0.5,3): # Vary N2
-        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T)
-        fig, axes = plt.subplots(1, 2, figsize=(10, 6))
+    i = 0 # Reset plot index back to initial value.
+    fig0, axes0 = plt.subplots(1, 5, figsize=(20, 10)) # Time plot
+    fig1, axes1 = plt.subplots(1, 5, figsize=(20, 10)) # Phase plot
+    for init_N2 in np.linspace(0.1,0.5,5): # Vary N2
+        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_predprey, N1_init=init_N1, N2_init=init_N2, t_final=max_T)
         # Time plot
-        axes[0].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
-        axes[0].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
-        axes[0].set_title("Plot over Time")
-        axes[0].legend()
-        axes[0].set_xlabel('Time (years)')
-        axes[0].set_ylabel('Population/Carrying Cap.')
+        axes0[i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes0[i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes0[i].set_title("Initial N2: " + str(init_N2))
+        axes0[i].legend()
+        axes0[i].set_xlabel('Time (years)')
+        axes0[i].set_ylabel('Population/Carrying Cap.')
+        axes0[i].set_ylim(0,1)
         # Phase plot
-        axes[1].plot(N1_rk, N2_rk)
-        axes[1].set_title("Phase Diagram")
-        axes[1].set_xlabel("N1 Population/Carrying Cap.")
-        axes[1].set_ylabel("N2 Population/Carrying Cap.")
-    
-        fig.suptitle("Lotka-Volterra Predator-Prey Model. Coefficients: a=1, b=2, c=1, d=3; initial N2: " + str(init_N2))
-#        fig.show()
-        fig.savefig(fname="question_three_varied_N2"+str(init_N2)+"predprey_lab2.png")
+        axes1[i].plot(N1_rk, N2_rk)
+        axes1[i].set_title("Initial N2: " + str(init_N2))
+        axes1[i].set_xlabel("N1 Population/Carrying Cap.")
+        axes1[i].set_ylabel("N2 Population/Carrying Cap.")
+        axes1[i].set_ylim(0,1)
+        axes1[i].set_xlim(0,1)
+        i += 1 # Increment plot index    
+
+    fig0.suptitle("Lotka-Volterra Predator-Prey Model Plot over Time. Coefficients: a=1, b=2, c=1, d=3")
+    fig1.suptitle("Lotka-Volterra Predator-Prey Model Phase Plot. Coefficients: a=1, b=2, c=1, d=3")
+#    fig0.show()
+#    fig1.show()
+    fig0.savefig(fname="question_three_varied_N2_time_predprey_lab2.png")
+    fig1.savefig(fname="question_three_varied_N2_phase_predprey_lab2.png")
+   
     init_N2 = 0.6 # Reset initial N2 back to original value
+    i = 0 # Reset plot index
+    fig0, axes0 = plt.subplots(1, 4, figsize=(20, 10)) # Time plot
+    fig1, axes1 = plt.subplots(1, 4, figsize=(20, 10)) # Phase plot
     for a in range(1,5): # Vary a
-        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, a=a,b=b,c=c,d=d)
-        fig, axes = plt.subplots(1, 2, figsize=(10, 6))
+        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_predprey, N1_init=init_N1, N2_init=init_N2, t_final=max_T, a=a,b=b,c=c,d=d)
         # Time plot
-        axes[0].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
-        axes[0].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
-        axes[0].set_title("Plot over Time")
-        axes[0].legend()
-        axes[0].set_xlabel('Time (years)')
-        axes[0].set_ylabel('Population/Carrying Cap.')
+        axes0[i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes0[i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes0[i].set_title("a: " + str(a))
+        axes0[i].legend()
+        axes0[i].set_xlabel('Time (years)')
+        axes0[i].set_ylabel('Population/Carrying Cap.')
+        axes0[i].set_ylim(0,1)
         # Phase plot
-        axes[1].plot(N1_rk, N2_rk)
-        axes[1].set_title("Phase Diagram")
-        axes[1].set_xlabel("N1 Population/Carrying Cap.")
-        axes[1].set_ylabel("N2 Population/Carrying Cap.")
+        axes1[i].plot(N1_rk, N2_rk)
+        axes1[i].set_title("a: "+str(a))
+        axes1[i].set_xlabel("N1 Population/Carrying Cap.")
+        axes1[i].set_ylabel("N2 Population/Carrying Cap.")
+        axes1[i].set_ylim(0,1)
+        axes1[i].set_xlim(0,1)
+        
+        i += 1 # Increment plot index
     
-        fig.suptitle("Lotka-Volterra Predator-Prey Model. Coefficients: a="+str(a)+", b=2, c=1, d=3")
-#        fig.show()
-        fig.savefig(fname="question_three_varied_a"+str(a)+"predprey_lab2.png")
+    fig0.suptitle("Lotka-Volterra Predator-Prey Model Plot over Time. Coefficients: b=2, c=1, d=3")
+    fig1.suptitle("Lotka-Volterra Predator-Prey Model Phase Plot. Coefficients: b=2, c=1, d=3")
+    
+#    fig0.show()
+#    fig1.show()
+   
+    fig0.savefig(fname="question_three_varied_a_time_predprey_lab2.png")
+    fig1.savefig(fname="question_three_varied_a_phase_predprey_lab2.png")
+
     a = 1 # Reset a back to original value
+    i = 0 # Reset plot index
+    fig0, axes0 = plt.subplots(1, 4, figsize=(20, 10)) # Time plot
+    fig1, axes1 = plt.subplots(1, 4, figsize=(20, 10)) # Phase plot
     for b in range(1,5): # Vary b
-        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, a=a,b=b,c=c,d=d)
-        fig, axes = plt.subplots(1, 2, figsize=(10, 6))
+        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_predprey, N1_init=init_N1, N2_init=init_N2, t_final=max_T, a=a,b=b,c=c,d=d)
         # Time plot
-        axes[0].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
-        axes[0].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
-        axes[0].set_title("Plot over Time")
-        axes[0].legend()
-        axes[0].set_xlabel('Time (years)')
-        axes[0].set_ylabel('Population/Carrying Cap.')
+        axes0[i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes0[i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes0[i].set_title("b: " + str(b))
+        axes0[i].legend()
+        axes0[i].set_xlabel('Time (years)')
+        axes0[i].set_ylabel('Population/Carrying Cap.')
+        axes0[i].set_ylim(0,1)
         # Phase plot
-        axes[1].plot(N1_rk, N2_rk)
-        axes[1].set_title("Phase Diagram")
-        axes[1].set_xlabel("N1 Population/Carrying Cap.")
-        axes[1].set_ylabel("N2 Population/Carrying Cap.")
+        axes1[i].plot(N1_rk, N2_rk)
+        axes1[i].set_title("b: "+str(b))
+        axes1[i].set_xlabel("N1 Population/Carrying Cap.")
+        axes1[i].set_ylabel("N2 Population/Carrying Cap.")
+        axes1[i].set_ylim(0,1)
+        axes1[i].set_xlim(0,1)
+        
+        i += 1 # Increment plot index
     
-        fig.suptitle("Lotka-Volterra Predator-Prey Model. Coefficients: a=1, b="+str(b)+", c=1, d=3")
-#        fig.show()
-        fig.savefig(fname="question_three_varied_b"+str(b)+"predprey_lab2.png")
+    fig0.suptitle("Lotka-Volterra Predator-Prey Model Plot over Time. Coefficients: a=1, c=1, d=3")
+    fig1.suptitle("Lotka-Volterra Predator-Prey Model Phase Plot. Coefficients: a=1, c=1, d=3")
+    
+#   fig0.show()
+#   fig1.show()
+   
+    fig0.savefig(fname="question_three_varied_b_time_predprey_lab2.png")
+    fig1.savefig(fname="question_three_varied_b_phase_predprey_lab2.png")
     b = 2 # Reset b back to original value
+
+    i = 0 # Reset plot index
+    fig0, axes0 = plt.subplots(1, 4, figsize=(20, 10)) # Time plot
+    fig1, axes1 = plt.subplots(1, 4, figsize=(20, 10)) # Phase plot
     for c in range(1,5): # Vary c
-        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, a=a,b=b,c=c,d=d)
-        fig, axes = plt.subplots(1, 2, figsize=(10, 6))
+        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_predprey, N1_init=init_N1, N2_init=init_N2, t_final=max_T, a=a,b=b,c=c,d=d)
         # Time plot
-        axes[0].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
-        axes[0].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
-        axes[0].set_title("Plot over Time")
-        axes[0].legend()
-        axes[0].set_xlabel('Time (years)')
-        axes[0].set_ylabel('Population/Carrying Cap.')
+        axes0[i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes0[i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes0[i].set_title("c: " + str(c))
+        axes0[i].legend()
+        axes0[i].set_xlabel('Time (years)')
+        axes0[i].set_ylabel('Population/Carrying Cap.')
+        axes0[i].set_ylim(0,1)
         # Phase plot
-        axes[1].plot(N1_rk, N2_rk)
-        axes[1].set_title("Phase Diagram")
-        axes[1].set_xlabel("N1 Population/Carrying Cap.")
-        axes[1].set_ylabel("N2 Population/Carrying Cap.")
+        axes1[i].plot(N1_rk, N2_rk)
+        axes1[i].set_title("c: "+str(c))
+        axes1[i].set_xlabel("N1 Population/Carrying Cap.")
+        axes1[i].set_ylabel("N2 Population/Carrying Cap.")
+        axes1[i].set_ylim(0,1)
+        axes1[i].set_xlim(0,1)
+        
+        i += 1 # Increment plot index
     
-        fig.suptitle("Lotka-Volterra Predator-Prey Model. Coefficients: a=1,b=2,c="+str(c)+", d=3")
-#        fig.show()
-        fig.savefig(fname="question_three_varied_c"+str(c)+"predprey_lab2.png")
+    fig0.suptitle("Lotka-Volterra Predator-Prey Model Plot over Time. Coefficients: a=1, b=2, d=3")
+    fig1.suptitle("Lotka-Volterra Predator-Prey Model Phase Plot. Coefficients: a=1, b=2, d=3")
+    
+#   fig0.show()
+#   fig1.show()
+   
+    fig0.savefig(fname="question_three_varied_c_time_predprey_lab2.png")
+    fig1.savefig(fname="question_three_varied_c_phase_predprey_lab2.png")
+
     c = 1 # Reset c back to original value
-    for d in range(1,5): # Vary d
-        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, a=a,b=b,c=c,d=d)
-        fig, axes = plt.subplots(1, 2, figsize=(10, 6))
-        # Time plot
-        axes[0].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
-        axes[0].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
-        axes[0].set_title("Plot over Time")
-        axes[0].legend()
-        axes[0].set_xlabel('Time (years)')
-        axes[0].set_ylabel('Population/Carrying Cap.')
-        # Phase plot
-        axes[1].plot(N1_rk, N2_rk)
-        axes[1].set_title("Phase Diagram")
-        axes[1].set_xlabel("N1 Population/Carrying Cap.")
-        axes[1].set_ylabel("N2 Population/Carrying Cap.")
     
-        fig.suptitle("Lotka-Volterra Predator-Prey Model. Coefficients: a=1,b=2,c=1,d="+str(d))
-#        fig.show()
-        fig.savefig(fname="question_two_varied_d"+str(d)+"comp_lab2.png")
+    i = 0 # Reset plot index
+    fig0, axes0 = plt.subplots(1, 4, figsize=(20, 10)) # Time plot
+    fig1, axes1 = plt.subplots(1, 4, figsize=(20, 10)) # Phase plot
+    for d in range(1,5): # Vary d
+        time_rk, N1_rk, N2_rk = solve_rk8(Ndt_predprey, N1_init=init_N1, N2_init=init_N2, t_final=max_T, a=a,b=b,c=c,d=d)
+        # Time plot
+        axes0[i].plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
+        axes0[i].plot(time_rk, N2_rk, ls='dashed',color='C3',label='N2 RKB')
+        axes0[i].set_title("d: " + str(d))
+        axes0[i].legend()
+        axes0[i].set_xlabel('Time (years)')
+        axes0[i].set_ylabel('Population/Carrying Cap.')
+        axes0[i].set_ylim(0,1)
+        # Phase plot
+        axes1[i].plot(N1_rk, N2_rk)
+        axes1[i].set_title("d: "+str(d))
+        axes1[i].set_xlabel("N1 Population/Carrying Cap.")
+        axes1[i].set_ylabel("N2 Population/Carrying Cap.")
+        axes1[i].set_ylim(0,1)
+        axes1[i].set_xlim(0,1)
+        
+        i += 1 # Increment plot index
+    
+    fig0.suptitle("Lotka-Volterra Predator-Prey Model Plot over Time. Coefficients: a=1, b=2, c=1")
+    fig1.suptitle("Lotka-Volterra Predator-Prey Model Phase Plot. Coefficients: a=1, b=2, c=1")
+    
+#   fig0.show()
+#   fig1.show()
+   
+    fig0.savefig(fname="question_three_varied_d_time_predprey_lab2.png")
+    fig1.savefig(fname="question_three_varied_d_phase_predprey_lab2.png")
 
 
 problem_one() # Run problem one
