@@ -151,7 +151,8 @@ def solve_rk8(func, N1_init=.5, N2_init=.5, dT=10, t_final=100.0, a=1, b=2, c=1,
 
 def problem_one():
     '''
-    This fuction solves the first problem in the assignment. 
+    This fuction solves the first problem in the assignment. It does so by first generating a plot with initially defined values, and then
+    it iterates through a range of step sizes twice, once for the competition model and once for the predator/prey model.
     '''
 
     # Define our constants for this problem.
@@ -241,7 +242,10 @@ def problem_one():
         fig.savefig(fname="question_one_"+str(step)+"predprey_lab2.png")
 def problem_two():
     '''
-    This function solves the second problem in the assignment.
+    This function solves the second problem in the assignment. It does so by iterating a range of values for the following variables
+    in  the Lotka-Volterra competition equation; a, b, c, d, initial N_1, and initial N_2. After doing this, it plots hard-coded values for
+    a specific scenario where the solution leads to an equilbrium. Optionally, this function will also loop through possible combinations of
+    the previously mentioned values in an attempt to find a solution where there is an equilibrium.
     '''
      # Define our constants for this problem.
     max_T = 100
@@ -368,7 +372,8 @@ def problem_two():
 
 def problem_three():
     '''
-    This function solves the third problem in the assignment.
+    This function solves the third problem in the assignment. It does so by iterating through each of the variables a, b, c, d, initial N_1, and initial N_2
+    in th Lotka-Volterra Predator=Prey equations. It plots both a phase diagram and a plot over time for each looped value.
     '''
      # Define our constants for this problem.
     max_T = 100
