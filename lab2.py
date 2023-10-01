@@ -254,7 +254,7 @@ def problem_two():
     d = 3
     init_N1 = 0.3
     init_N2 = 0.6
-    for init_N1 in np.linspace(0.1, 0.5, 3): # Vary initial N1
+    for init_N1 in np.linspace(0.1, 0.5, 5): # Vary initial N1
         time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step)
         fig, axes = plt.subplots(1, 1, figsize=(10, 6))
         axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
@@ -268,7 +268,7 @@ def problem_two():
 #        fig.show()
         fig.savefig(fname="question_two_varied_N1"+str(init_N1)+"comp_lab2.png")
     init_N1 = 0.3 # Reset initial N1 back to original value.
-    for init_N2 in np.linspace(0.1,0.5,3): # Vary N2
+    for init_N2 in np.linspace(0.1,0.5,5): # Vary N2
         time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step)
         fig, axes = plt.subplots(1, 1, figsize=(10, 6))
         axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
@@ -337,12 +337,13 @@ def problem_two():
         fig.suptitle("Coefficients: a=1,b=2,c=1,d="+str(d))
 #        fig.show()
         fig.savefig(fname="question_two_varied_d"+str(d)+"comp_lab2.png")
-    d = 3
-    b = 2
-    c = 1
-    a = 1
-    N1_init = 0.325
-    N2_init = 0.775
+    d = 5
+    b = 0.1
+    c = 5
+    a = 0.1
+    init_N1 = 0.5
+    init_N2 = 0.5
+    max_T = 100000 # Increase max T so we can ensure that the destabilization point is not simply further along.
     time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step, a=a, b=b,c=c,d=d)
     fig, axes = plt.subplots(1, 1, figsize=(10, 6))
     axes.plot(time_rk, N1_rk, ls='dashed',color='C2',label='N1 RKB')
@@ -352,15 +353,17 @@ def problem_two():
     axes.set_xlabel('Time (years)')
     axes.set_ylabel('Population/Carrying Cap.')
     
-    fig.suptitle("Coefficients: a=1,b=2,c=1,d=3; initial N1 = 0.325, initial N2 = 0.775.")
-#        fig.show()
-    fig.savefig(fname="question_two_combined_best_comp_lab2.png")
- #   for init_N1 in np.linspace(0.1, 1, 9):
- #       for init_N2 in np.linspace(0.1, 1, 9):
- #           time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step, a=a, b=b,c=c,d=d)
- #           if(N1_rk[-1] > 0.2 and N2_rk[-1] > 0.2):
- #               print("a: "+ str(a) + ",b:"+str(b)+",c:"+str(c)+",d:"+str(d)+",N1_init:"+str(init_N1)+",N2_init:"+str(init_N2))
-
+    fig.suptitle("Coefficients: a=0.1,b=0.1,c=5,d=5; initial N1 = 0.5, initial N2 = 0.5.")
+    fig.show()
+    fig.savefig(fname="question_two_final_comp_lab2.png")
+'''    for a in np.linspace(0.1, 5, 9):
+        for b in np.linspace(0.1, 5, 9):
+            for c in np.linspace(0.1, 5, 9):
+                for d in np.linspace(0.1, 5, 9):
+                    time_rk, N1_rk, N2_rk = solve_rk8(Ndt_comp, N1_init=init_N1, N2_init=init_N2, t_final=max_T, dT = comp_step, a=a, b=b,c=c,d=d)
+                    if(N1_rk[-1] > 0.2 and N2_rk[-1] > 0.2):
+                        print("a: "+ str(a) + ",b:"+str(b)+",c:"+str(c)+",d:"+str(d)+",N1_init:"+str(init_N1)+",N2_init:"+str(init_N2))
+'''
 
 
 def problem_three():
@@ -501,6 +504,6 @@ def problem_three():
         fig.savefig(fname="question_two_varied_d"+str(d)+"comp_lab2.png")
 
 
-#problem_one() # Run problem one
-#problem_two() # Run problem two
+problem_one() # Run problem one
+problem_two() # Run problem two
 problem_three() # Run problem three
