@@ -36,10 +36,10 @@ def initialize_array(nlayers, epsilon, ground_epsilon, solar_flux, debug=False):
     # Populate based on our model:
     for i in range(nlayers + 1):
         for j in range(nlayers + 1):
-            if i == 0:
-                if j == 0:
+            if j == 0:
+                if i == 0:
                     A[i,j] = -1
-                elif j == nlayers:
+                elif i == nlayers:
                     A[i,j] = ground_epsilon*pow(1 - epsilon, abs(j - i) - 1)
                 else:
                     A[i,j] = ground_epsilon * pow(1 - epsilon, abs(j - i) - 1)
@@ -201,6 +201,29 @@ def problem_four():
     '''
     Solves problem four of the assignment.
     '''
+    # Define our expected surface temperature.
+    surf_temp = 700
+    # Define our solar flux in watts per square meter
+    sol_flux = 2600
+    # Define our emissivity
+    emmis = 1.
+    # Define Venus' albedo
+    albedo = 0.7
+
+    # Define the range of values for the number of layers.
+    layers = np.arange(1, 100, 1)
+    # Initialize the matrix of surface temperatures.
+    temps = np.zeros(len(layers))
+    # Define an empty array of values that work
+    answers = []
+
+    for i in range(len(layers)):
+        temps[i] = solve_model(layers[i], emmis, albedo, sol_flux)[0]
+        if abs(temps[i] - surf_temp) < 10:
+            answers.append(layers[i])
+
+    # The first value in layers should be the minimum number of layers needed
+    answer = answers[0]
 
 def problem_five():
     '''
