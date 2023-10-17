@@ -18,7 +18,7 @@ def initialize_array(nlayers, epsilon, ground_epsilon, solar_flux, debug=False):
     ground_epsilon: float
         The albedo value 
     solar_flux: float
-        The value of solar irradiance
+        The value of solar irradiance [W/m^2]
     debug: boolean
         Whether this is a debugging run
 
@@ -39,6 +39,8 @@ def initialize_array(nlayers, epsilon, ground_epsilon, solar_flux, debug=False):
             if j == 0:
                 if i == 0:
                     A[i,j] = -1
+                elif i == 1:
+                    A[i, j] = epsilon
                 elif i == nlayers:
                     A[i,j] = ground_epsilon*pow(1 - epsilon, abs(j - i) - 1)
                 else:
@@ -49,7 +51,9 @@ def initialize_array(nlayers, epsilon, ground_epsilon, solar_flux, debug=False):
                 A[i,j] = epsilon * pow(1 - epsilon, abs(j - i) - 1)
             if debug:
                 print(f'A[i={i},j={j}] = {A[i, j]}')
-    b[0] = -1 * solar_flux
+    b[0] = -1/4 * (1-ground_epsilon) * solar_flux
+    if debug:
+        print(A)
     return A, b
 
 def solve_equation(A, b):
@@ -173,9 +177,19 @@ def problem_three():
     answers = []
     for i in range(len(layers)):
         temps[i] = solve_model(layers[i], emissivity, albedo, s_flux)[0]
-        if abs(temps[i] - 288) < 10:
-            answers.append(layers[i])
+        try:
+           if abs(temps[i] - 288) < 10:
+                print(layers[i])
+                answers.append(layers[i])
+        except IndexError:
+            print("No solutions found")
 
+    fig, axes = plt.subplots(1, 1, figsize=(10, 6))
+    axes.plot(layers, temps, ls='solid',color='C2')
+    axes.set_title('Number of Layers vs. Temperature')
+    axes.set_xlabel('Number of Layers')
+    axes.set_ylabel('Temperature (Kelvin)')
+    fig.savefig("lab3_3_part2")
     # The first value in layers should be the minimum number of layers needed
     answer = answers[0]
 
@@ -196,7 +210,7 @@ def problem_three():
     axes.set_title("Altitude vs. Temperature")
     axes.set_xlabel('Altitude (miles)')
     axes.set_ylabel('Temperature (Kelvin)')
-    fig.savefig("lab3_3_part2")
+    fig.savefig("lab3_3_part3")
 def problem_four():
     '''
     Solves problem four of the assignment.
