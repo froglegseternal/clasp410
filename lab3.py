@@ -190,9 +190,12 @@ def problem_three():
     axes.set_xlabel('Number of Layers')
     axes.set_ylabel('Temperature (Kelvin)')
     fig.savefig("lab3_3_part2")
-    # The first value in layers should be the minimum number of layers needed
-    answer = answers[0]
-
+    try:
+        # The first value in layers should be the minimum number of layers needed
+        answer = answers[0]
+    except:
+        answer = 100 # If there are no solutions, default to one hundred layers.
+    
     answer_temps = solve_model(answer, emissivity, albedo, s_flux)
 
     # Set an array of altitudes.
@@ -203,13 +206,14 @@ def problem_three():
     
     # Set the altitude values to the correct value.
     for i in range(len(altitudes)):
-        altitude = i/atmo_alt
+        altitudes[i] = (i/100)*atmo_alt
+
 
     fig, axes = plt.subplots(1, 1, figsize=(10, 6))
-    axes.plot(atmo_alt, answer_temps, ls='solid',color='C2')
+    axes.plot(answer_temps, altitudes, ls='solid',color='C2')
     axes.set_title("Altitude vs. Temperature")
-    axes.set_xlabel('Altitude (miles)')
-    axes.set_ylabel('Temperature (Kelvin)')
+    axes.set_ylabel('Altitude (miles)')
+    axes.set_xlabel('Temperature (Kelvin)')
     fig.savefig("lab3_3_part3")
 def problem_four():
     '''
@@ -238,6 +242,7 @@ def problem_four():
 
     # The first value in layers should be the minimum number of layers needed
     answer = answers[0]
+    print(str(answer) + " layers are needed.")
 
 def problem_five():
     '''
