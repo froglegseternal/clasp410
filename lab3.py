@@ -56,6 +56,55 @@ def initialize_array(nlayers, epsilon, ground_epsilon, solar_flux, debug=False):
         print(A)
     return A, b
 
+def initialize_array_adj(nlayers, epsilon, ground_epsilon, solar_flux, debug=False):
+    '''
+    Create the A and b arrays, and then return them as a tuple.
+
+    Parameters
+    ==========
+    nlayers: int
+        The number of layers for the model to use
+    epsilon: float
+        Our emissivity value
+    ground_epsilon: float
+        The albedo value 
+    solar_flux: float
+        The value of solar irradiance [W/m^2]
+    debug: boolean
+        Whether this is a debugging run
+
+    Returns
+    =======
+        A: numpy array
+            Coefficient matrix
+        b: numpy array
+            Vector of constants 
+    '''
+    # Create array of coefficients, an N+1xN+1 array:
+    A = np.zeros([nlayers+1, nlayers+1])
+    b = np.zeros(nlayers+1)
+
+    # Populate based on our model:
+    for i in range(nlayers + 1):
+        for j in range(nlayers + 1):
+            if j == 0:
+                if i == 0:
+                    A[i,j] = -1
+                elif i == 1:
+                    A[i, j] = epsilon
+                elif i == nlayers:
+                    A[i,j] = ground_epsilon*pow(1 - epsilon, abs(j - i) - 1)
+                else:
+                    A[i,j] = ground_epsilon * pow(1 - epsilon, abs(j - i) - 1)
+            elif i == j:
+                A[i,j] = -2
+            else:
+                A[i,j] = epsilon * pow(1 - epsilon, abs(j - i) - 1)
+            if debug:
+                print(f'A[i={i},j={j}] = {A[i, j]}')
+    if debug:
+        print(A)
+    return A, b
 def solve_equation(A, b):
     '''
     Given the A and b matrices, solve for the flux matrix and return it. It does this by inverting the A matrix and
@@ -141,7 +190,32 @@ def solve_model(nlayers, epsilon, ground_epsilon, solar_flux, debug=False):
     temps = convert_to_temps(fluxes, epsilon)
     return temps
 
+def solve_model_adj(nlayers, epsilon, ground_epsilon, solar_flux, debug=False):
+    '''
+    Run the entire model, returning the temperature matrix.
 
+    Parameters
+    ==========
+    nlayers: int
+        The number of layers for the model to use
+    epsilon: float
+        Our emissivity value
+    ground_epsilon: float
+        The albedo value 
+    solar_flux: float
+        The value of solar irradiance
+    debug: boolean
+        Whether this is a debugging run
+
+    Returns
+    =======
+    temps: numpy array
+        The temperature matrix
+    '''
+    A, b = initialize_array_adj(nlayers, epsilon, ground_epsilon, solar_flux, debug=debug)
+    fluxes = solve_equation(A, b)
+    temps = convert_to_temps(fluxes, epsilon)
+    return temps
 def problem_three():
     '''
     Solves problem three of the assignment.
@@ -248,3 +322,29 @@ def problem_five():
     '''
     Solves problem five of the assignment.
     '''
+    # Define our solar flux in watts per square meter
+    sol_flux = 1350
+    # Define our emissivity
+    emmis = 0.5
+    # Define Earth's albedo
+    albedo = 0.3
+    temps = solve_model_adj(100, emmis, albedo, sol_flux)
+    # Set an array of altitudes.
+    altitudes = np.zeros(len(temps))
+
+    # Altitude of the uppermost part of Earth's atmosphere in miles
+    atmo_alt = 6214
+    
+    # Set the altitude values to the correct value.
+    for i in range(len(altitudes)):
+        altitudes[i] = (i/100)*atmo_alt
+
+
+    fig, axes = plt.subplots(1, 1, figsize=(10, 6))
+    axes.plot(temps, altitudes, ls='solid',color='C2')
+    axes.set_title("Altitude vs. Temperature")
+    axes.set_ylabel('Altitude (miles)')
+    axes.set_xlabel('Temperature (Kelvin)')
+    fig.savefig("lab3_5")
+
+    print("The surface temperature is " + str(temps[0]) + " Kelvin")
