@@ -6,9 +6,11 @@ A set of tools for solving and visualizing the heat equation in 1D.
 import numpy as np
 import matplotlib.pyplot as plt
 
+def sample_init(x):
+    '''Simple initial boundary condition function'''
+    return 4*x - 4*x**2
 
-
-def heat_solve(dt=0.02, dx=0.2,c2=1.0, xmax=1.0, tmax=0.2, init=0):
+def heat_solve(dt=0.02, dx=0.2,c2=1.0, xmax=1.0, tmax=0.2, init=sample_init):
     '''
     Stuff.
 
@@ -21,6 +23,9 @@ def heat_solve(dt=0.02, dx=0.2,c2=1.0, xmax=1.0, tmax=0.2, init=0):
 
     xmax, tmax : float, default=1.0, 0.2
         Set max values for space and time grids
+    init : scalar or function
+        Set initial condition. If a function, should take position
+        as an input and return temperature using same units as x, temp.
     Returns
     -------
     x : numpy vector
@@ -48,7 +53,12 @@ def heat_solve(dt=0.02, dx=0.2,c2=1.0, xmax=1.0, tmax=0.2, init=0):
     # Set initial and boundary conditions.
     temp[0, :] = 0
     temp[-1, :] = 0
-    temp[:, 0] = 4*x - 4*x**2
+    # Set initial condition.
+    if callable(init):
+        temp[:, 0] = init(x)
+    else:
+        temp[:, 0] = init
+
 
     # Solve!
     for j in range(0, N-1):
