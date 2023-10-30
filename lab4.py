@@ -167,7 +167,7 @@ def gen_heatmap(dt=0.02, dx=0.2,c2=1.0, xmax=1.0, tmax=0.2, init=sample_init,max
     plt.colorbar(map, ax=axes, label='Temperature ($C$)')
     axes.set_xlabel('Time (years)')
     axes.set_ylabel('Height (m)')
-    return fig
+    return fig, axes
 
 def gengroundprof(dt=0.02, dx=0.2,c2=1.0, xmax=1.0, tmax=0.2, init=sample_init,max_bound=0.0,min_bound=0.0,xmin=0.0,tmin=0.0):
     '''
@@ -195,7 +195,7 @@ def gengroundprof(dt=0.02, dx=0.2,c2=1.0, xmax=1.0, tmax=0.2, init=sample_init,m
     ax2.set_xlabel('Temperature ($C$)')
     ax2.set_ylabel('Height (m)')
 
-    return fig
+    return fig, ax2
 
 def temp_kanger(t):
     '''
@@ -306,11 +306,11 @@ def prob_two():
         tmax += 365
 
     print("Years to stabilization: " + str(tmax/365))
-    fig = gen_heatmap(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin) 
-    fig.show()
+    fig, ax = gen_heatmap(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin) 
+    ax.set_title('Heatmap Without Adjustment')
     fig.savefig('heatmap_prob_2')
-    fig2 = gengroundprof(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin)
-    fig2.show()
+    fig2, ax2 = gengroundprof(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin)
+    ax2.set_title('Ground Profile Without Adjustment')
     fig2.savefig('groundprof_prob_2')
 
 #Now, solve problem three of the assignment.
@@ -361,11 +361,11 @@ while not steady:
     tmax += 365
 
 print("Years to stabilization for a 0.5 shift: " + str(tmax/365))
-fig = gen_heatmap(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin) 
-fig.show()
+fig, ax = gen_heatmap(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin) 
+ax.set_title('Heatmap for a 0.5 degree Shift')
 fig.savefig('heatmap_prob_3_0_5')
-fig2 = gengroundprof(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin)
-fig2.show()
+fig2, ax2 = gengroundprof(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin)
+ax2.set_title('Ground Profile for a 0.5 degree Shift')
 fig2.savefig('groundprof_prob_3_0_5')
 
 # Now, add a uniform 1 degree temperature shift.
@@ -414,11 +414,11 @@ while not steady:
     tmax += 365
 
 print("Years to stabilization for a 1 shift: " + str(tmax/365))
-fig = gen_heatmap(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin) 
-fig.show()
+fig, ax = gen_heatmap(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin) 
+ax.set_title('Heatmap for a 1 degree Shift')
 fig.savefig('heatmap_prob_3_1')
-fig2 = gengroundprof(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin)
-fig2.show()
+fig2,ax2 = gengroundprof(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin)
+ax2.set_title('Ground Profile for a 1 degree Shift')
 fig2.savefig('groundprof_prob_3_1')
 
 # Finally, add a uniform 3 degree temperature shift.
@@ -467,9 +467,9 @@ while not steady:
     tmax += 365
 
 print("Years to stabilization for a 3 shift: " + str(tmax/365))
-fig = gen_heatmap(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin) 
-fig.show()
+fig, ax = gen_heatmap(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin) 
+ax.set_title('Heatmap for a 3 degree Shift')
 fig.savefig('heatmap_prob_3_3')
-fig2 = gengroundprof(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin)
-fig2.show()
+fig2, ax2 = gengroundprof(dx=dx,dt=dt, c2=c2, xmax=xmax, tmax=tmax, init=0,max_bound=max_bound,min_bound=min_bound,xmin=xmin)
+ax2.set_title('Ground Profile for a 3 degree Shift')
 fig2.savefig('groundprof_prob_3_3')
