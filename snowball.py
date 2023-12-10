@@ -100,7 +100,7 @@ def basic_diffusion(dt=31536000., t_final=315360000000., debug=False):
     debug: boolean
         Optional debug with print statements
     '''
-    npoints = 200 # Number of points in the y direction.
+    npoints = 100 # Number of points in the y direction.
     dlat = 180 / npoints # Latitude spacing.
 
     dy = np.pi * dlat * radearth /180 # Latitude spacing in meters.
@@ -120,19 +120,17 @@ def basic_diffusion(dt=31536000., t_final=315360000000., debug=False):
             elif j == i - 1:
                 A[i,j] = 1/(dy**2)
     
-    L = np.identity(npoints) - lamb*dt*A # Define the L matrix, the one to be inverted.
+    L = np.eye(npoints) - lamb*dt*A # Define the L matrix, the one to be inverted.
     if debug:
         print("L matrix: "+str(L))
     temps = temp_warm(lats) # Initialize the temperature vector
 
-    for i in range(int(np.ceil(t_final/dt))):
-        inv_L = np.linalg.inv(L)
-        if debug:
-            print("Inverted L matrix: " + str(inv_L))
-        np.matmul(inv_L,temps,out=temps)
+    inv_L = np.linalg.inv(L)
+    for i in range(int(t_final/dt)):
+        temps = np.matmul(inv_L,temps)
         if debug:
             print("Temperature array: " + str(temps))
-    return temps
+    return lats, temps
 
 def spherical_correction(dt=31536000., t_final=315360000000., debug=False):
     '''
@@ -148,7 +146,7 @@ def spherical_correction(dt=31536000., t_final=315360000000., debug=False):
         Optional debug with print statements
     '''
     dt_sec = dt # dt in seconds, same as dt for now but in case of future changes this value is put here.
-    npoints = 200 # Number of points in the y direction.
+    npoints = 100 # Number of points in the y direction.
     dlat = 180 / npoints # Latitude spacing.
 
     dy = np.pi * dlat * radearth/180 # Latitude spacing in meters.
@@ -195,12 +193,12 @@ def spherical_correction(dt=31536000., t_final=315360000000., debug=False):
         sphcorr = lamb * dt_sec * np.matmul(B,temps)*dAxz #Spherical correction term
         if debug:
             print("Spherical correction factor: "+str(sphcorr))
-        np.matmul(inv_L,temps+sphcorr,out=temps)
+        temps = np.matmul(inv_L,temps+sphcorr)
         if debug:
             print("Temperature array: " + str(temps))
-    return temps
+    return lats, temps
 
-def rad_forcing(dt=31536000., t_final=315360000000., debug=False,albedo=0.3,emissivity=1.0,lamb=100.):
+def rad_forcing(dt=31536000., t_final=315360000000., debug=False,albedo=0.3,emissivity=1.0,lamb=100.,start=temp_warm,gamma=0):
     '''
     The basic diffusion solver, with added spherical correction and radiative forcing terms.
     
@@ -218,10 +216,14 @@ def rad_forcing(dt=31536000., t_final=315360000000., debug=False,albedo=0.3,emis
         The emissivity - or, a function to generate the emissivity.
     lamb: float
         The diffusivity value
+    start: function or matrix
+        The initial condition
+    gamma: float
+        The gamma value for the insolation condition
     '''
     dt_sec = dt # dt in seconds, same as dt for now but in case of future changes this value is put here.
     npoints = 100 # Number of points in the y direction.
-    dlat = 180 / npoints # Latitude spacing.
+    dlat = 180. / npoints # Latitude spacing.
 
     dy = np.pi * dlat * radearth/180 # Latitude spacing in meters.
     lats = np.linspace(dlat/2., 180-dlat/2., npoints) # Lat cell centers.
@@ -243,8 +245,10 @@ def rad_forcing(dt=31536000., t_final=315360000000., debug=False,albedo=0.3,emis
     L = np.identity(npoints) - lamb*dt*A # Define the L matrix, the one to be inverted.
     if debug:
         print("L matrix: "+str(L))
-    temps = temp_warm(lats) # Initialize the temperature vector
-
+    if callable(start):
+        temps = start(lats) # Initialize the temperature vector
+    else:
+        temps = start
     Area = np.zeros((npoints,npoints)) # The area array
     # Create matrix "B" to assist with adding spherical-correction factor
     # Corner values for 1st order accurate Neumann boundary conditions
@@ -258,8 +262,10 @@ def rad_forcing(dt=31536000., t_final=315360000000., debug=False,albedo=0.3,emis
     dAxz = np.matmul(B, Area) / (Area * 4 * dy **2)
 
     # Set insolation:
-    insol = insolation(S0, lats)
-
+    if gamma == 0:
+        insol = insolation(S0, lats)
+    else:
+        insol = gamma * insolation(S0, lats)
     # Solve!
     for i in range(int(np.ceil(t_final/dt))):
         inv_L = np.linalg.inv(L)
@@ -268,12 +274,29 @@ def rad_forcing(dt=31536000., t_final=315360000000., debug=False,albedo=0.3,emis
         sphcorr = lamb * dt_sec * np.matmul(B,temps)*dAxz #Spherical correction term
         
         # Add insolation term:
-        radiative = (1-albedo)*insol - emissivity*sigma*(temps+273)**4
+        if not callable(albedo):
+            radiative = (1-albedo)*insol - emissivity*sigma*(temps+273)**4
+        else:
+            radiative = (1-albedo(temps))*insol - emissivity*sigma*(temps+273)**4
         forc_term = dt_sec * radiative / (rho*C*mxdlyr)# Radiative forcing term
-        np.matmul(inv_L,temps+sphcorr+forc_term,out=temps)
+        temps = np.matmul(inv_L,temps+sphcorr+forc_term)
         if debug:
             print("Temperature array: " + str(temps))
-    return temps    
+    return lats,temps    
+
+def first_prob():
+    lats, temps = basic_diffusion()
+    temps0 = temp_warm(lats)
+    lats, temps2 = spherical_correction()
+    lats, temps3 = rad_forcing()
+    plt.plot(lats, temps, label="Basic Diffusion")
+    plt.plot(lats, temps0, label="Initial Condition")
+    plt.plot(lats, temps2, label="Diff. + Spherical Correction")
+    plt.plot(lats, temps3, label="Diff.+SphCorr+Radiative")
+    plt.xlabel("Latitude")
+    plt.ylabel("Temperature (deg C)")
+    plt.legend()
+    plt.imsave("initial_plot.png")
 
 def varying_albedo(temps):
     '''
@@ -291,31 +314,167 @@ def varying_albedo(temps):
     albedo[loc_ice] = albedo_ice
     albedo[~loc_ice] = albedo_gnd
 
+    return albedo
 
-def vary_diffusivity():
+
+
+def vary_diffusivity(emiss=1.0):
     '''
     Function that varies the diffusivity of the model and then plots the results.
+    
+    Parameters
+    ==========
+    emiss: float
+        The emissivity values to test for
     '''
     ranger = [0, 25, 50, 75, 100, 125, 150]
     results = []
     
     for x in ranger:
-        results.append(rad_forcing(lamb=x))
+        results.append(rad_forcing(lamb=x,emissivity=emiss)[1])
 
     npoints = 100
     dlat = 180 / npoints # Latitude spacing.
     lats = np.linspace(dlat/2., 180-dlat/2., npoints) # Lat cell centers.
     fig, axes = plt.subplots(1, 1, figsize=(10, 8))
     
+    axes.plot(lats, temp_warm(lats),label="Warm Earth")
     for i in range(len(ranger)):
-        axes.plot(lats, )
+        axes.plot(lats, results[i], label=str(ranger[i]))
+    
+    axes.set_xlabel("Latitude")
+    axes.set_ylabel("Temperature (deg C)")
+    axes.legend()
+    axes.set_title("Varied Diffusivities")
+    fig.show()
+    fig.savefig("varied_diffusivity2.png")
+
 
     
 def vary_emissivity():
     '''
     Function that varies the emissivity of the model and then plots the results.
     '''
-    range = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    ranger = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     results = []
-    for x in range:
-        results.append(rad_forcing(emissivity=x))
+    for x in ranger:
+        results.append(rad_forcing(emissivity=x)[1])
+
+    npoints = 100
+    dlat = 180 / npoints # Latitude spacing.
+    lats = np.linspace(dlat/2., 180-dlat/2., npoints) # Lat cell centers.
+    fig, axes = plt.subplots(1, 1, figsize=(10, 8))
+    
+    axes.plot(lats, temp_warm(lats),label="Warm Earth")
+    for i in range(len(ranger)):
+        axes.plot(lats, results[i], label=str(ranger[i]))
+    
+    axes.set_xlabel("Latitude")
+    axes.set_ylabel("Temperature (deg C)")
+    axes.legend()
+    axes.set_title("Varied Emissivities")
+    fig.show()
+    fig.savefig("varied_emissivity.png")
+
+def testing_values(emiss,diff):
+    '''
+    Function that tests guessed values for the model.
+    
+    Parameters
+    ==========
+    emiss: boolean
+        Emissivity value for the guessed model
+    diffusivity: boolean
+        Diffusivity value for the guessed model
+    '''
+    
+    lats, temps = rad_forcing(emissivity=emiss,lamb=diff)
+
+    fig, axes = plt.subplots(1, 1, figsize=(10, 8))
+    
+    axes.plot(lats, temp_warm(lats),label="Warm Earth")
+
+    axes.plot(lats,temps,label="Tested values")
+
+    axes.legend()
+    axes.set_title("Tested Values: emissivity of "+ str(emiss) + " and diffusivity of "+str(diff))
+    axes.set_xlabel("Latitude")
+    axes.set_ylabel("Temperature (deg C)")
+    fig.show()
+    fig.savefig("Tested_values.png")
+
+def second_prob():
+    '''
+    Function to solve the second problem in the assignment.
+    '''
+    testing_values(0.7,50)
+    
+def start_warm(lats):
+    T_warm = lats
+    T_warm[:] = 60
+    return T_warm
+def start_cold(lats):
+    T_cold = lats
+    T_cold[:] = -60
+    return T_cold
+def third_prob():
+    temps_cold = rad_forcing(emissivity=0.7,lamb=50,albedo=varying_albedo, start = start_cold)[1]
+    temps_warm = rad_forcing(emissivity=0.7,lamb=50,albedo=varying_albedo, start=start_warm)[1]
+    temps_changed = rad_forcing(emissivity=0.7,lamb=50,albedo=0.6)[1]
+
+    npoints = 100
+    dlat = 180 / npoints # Latitude spacing.
+    lats = np.linspace(dlat/2., 180-dlat/2., npoints) # Lat cell centers.
+    fig, axes = plt.subplots(1, 1, figsize=(10, 8))
+    
+    axes.plot(lats, temp_warm(lats),label="Warm Earth")
+    axes.plot(lats, temps_cold, label="Starting cold")
+    axes.plot(lats, temps_warm, label="Starting hot")
+    axes.plot(lats, temps_changed,label="Albedo of 0.6")
+
+    axes.set_xlabel("Latitude")
+    axes.set_ylabel("Temperature (deg C)")
+    axes.legend()
+    axes.set_title("Varied Albedoes")
+    fig.show()
+    fig.savefig("varied_albedoes.png")
+
+def fourth_prob():
+    temps = [] # The final matrix set of solutions
+    gammas = [] # The matrix set of gamma values, for graphing purposes
+    means = [] # The matrix set of mean temperatures
+    gamma = 0.4 # The gamma value for insolation
+    i = 0 # The iteration we're on 
+
+    temps_initial = rad_forcing(emissivity=0.7,lamb=50,gamma=gamma)[1]
+    temps.append(temps_initial)
+    means.append(temps_initial.mean())
+    i += 1
+    gammas.append(gamma)
+    gamma = 0.45
+    
+    while (gamma <= 1.4):
+        temps_i = rad_forcing(emissivity = 0.7, lamb=50,gamma=gamma, start = temps[i-1])[1]
+        temps.append(temps_i)
+        means.append(temps_i.mean())
+        gammas.append(gamma)
+        i+=1
+        gamma+=0.05
+    
+    gamma = 1.4
+    while (gamma >= 0.4):
+        temps_i = rad_forcing(emissivity = 0.7, lamb=50,gamma=gamma, start = temps[i-1])[1]
+        temps.append(temps_i)
+        means.append(temps_i.mean())
+        gammas.append(gamma)
+        i+=1
+        gamma-=0.05
+    
+    fig, axes = plt.subplots(1, 1, figsize=(10, 8))
+    axes.plot(gammas, means)
+
+    axes.set_xlabel("Gamma values")
+    axes.set_ylabel("Average Global Temperature (deg C)")
+    axes.set_title("Varied Gammas")
+    fig.show()
+    fig.savefig("varied_gammas.png")
